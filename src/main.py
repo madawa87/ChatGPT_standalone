@@ -55,14 +55,7 @@ def get_new_conversation():
     conversation.append(sys_line)
     return conversation
 
-
-def main():
-    secrets_path = Path("secrets")
-    secrets_file = secrets_path / "secrets.json" 
-    secrets = load_json(secrets_file)
-    openai.api_key = secrets['openai_key']
-
-    conversation = get_new_conversation()
+def run_conversation_loop(conversation):
 
     while True:
         user_in = input("\n\nUSER: ")
@@ -90,6 +83,15 @@ def main():
         print(f"{total_t} = c:{completion_t} + p:{prompt_t}")
         print_response_end()
 
+def main():
+    secrets_path = Path("secrets")
+    secrets_file = secrets_path / "secrets.json" 
+    secrets = load_json(secrets_file)
+    openai.api_key = secrets['openai_key']
 
+    conversation = get_new_conversation()
+    run_conversation_loop(conversation)
+
+    
 if __name__ == "__main__":
     main()
