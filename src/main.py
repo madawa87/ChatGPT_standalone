@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 from pathlib import Path
 import json
 import openai
@@ -39,6 +40,12 @@ def print_response_end():
     print(f"--------------------------------------------------------")
 
 
+
+def get_conversation_from_prompt_file(prompt_file):
+    prompt = prompt_file.read()
+    print(f"ss:{prompt}")
+    return prompt
+
 def get_new_conversation():
     """
     Creates a new conversation between a user and a system.
@@ -55,8 +62,21 @@ def get_new_conversation():
     conversation.append(sys_line)
     return conversation
 
-def run_conversation_loop(conversation):
+def append_user_prompt(conversation, user_prompt):
+    conversation.append({'role': 'user', 'content': user_prompt})
 
+def get_response_print(conversation):
+    response = chatgpt_completion(conversation)
+    resp_text = response['choices'][0]['message']['content']
+    conversation.append({'role': 'assistant', 'content': resp_text})
+    prompt_t = response['usage']['prompt_tokens']
+    completion_t = response['usage']['completion_tokens']
+    total_t = response['usage']['total_tokens']
+
+    print(f"\n\nASSISTANT: {resp_text}")
+    print(f"{total_t} = c:{completion_t} + p:{prompt_t}")
+
+def run_conversation_loop(conversation): 
     while True:
         user_in = input("\n\nUSER: ")
 
@@ -69,19 +89,10 @@ def run_conversation_loop(conversation):
             conversation= get_new_conversation()
             user_in = user_in[1:]
 
-        conversation.append({'role': 'user', 'content': user_in})
-
-        response = chatgpt_completion(conversation)
-        resp_text = response['choices'][0]['message']['content']
-        conversation.append({'role': 'assistant', 'content': resp_text})
-
-        prompt_t = response['usage']['prompt_tokens']
-        completion_t = response['usage']['completion_tokens']
-        total_t = response['usage']['total_tokens']
-
-        print(f"\n\nASSISTANT: {resp_text}")
-        print(f"{total_t} = c:{completion_t} + p:{prompt_t}")
+        append_user_prompt(conversation, user_in)
+        get_response_print(conversation)
         print_response_end()
+        
 
 def main():
     secrets_path = Path("secrets")
@@ -89,7 +100,23 @@ def main():
     secrets = load_json(secrets_file)
     openai.api_key = secrets['openai_key']
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("prompt_file", nargs='?', 
+                        help="Path to the file contains initial promt")
+    args = parser.parse_args()
+
+    prompt_file = args.prompt_file
+
     conversation = get_new_conversation()
+
+    # get prompt from file if provided and run it once
+    if prompt_file:
+        with open(prompt_file, 'r') as pf:
+            prompt = get_conversation_from_prompt_file(pf)
+            append_user_prompt(conversation, prompt)
+            get_response_print(conversation)
+
+    # main conversation loop
     run_conversation_loop(conversation)
 
     
