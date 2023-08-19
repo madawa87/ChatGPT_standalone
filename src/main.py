@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 import json
 import openai
 
@@ -56,7 +57,9 @@ def get_new_conversation():
 
 
 def main():
-    secrets = load_json('secrets/secrets.json')
+    secrets_path = Path("secrets")
+    secrets_file = secrets_path / "secrets.json" 
+    secrets = load_json(secrets_file)
     openai.api_key = secrets['openai_key']
 
     conversation = get_new_conversation()
