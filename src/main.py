@@ -65,8 +65,8 @@ def get_new_conversation():
 def append_user_prompt(conversation, user_prompt):
     conversation.append({'role': 'user', 'content': user_prompt})
 
-def get_response_print(conversation):
-    response = chatgpt_completion(conversation)
+def get_response_print(conversation, model):
+    response = chatgpt_completion(conversation, model)
     resp_text = response['choices'][0]['message']['content']
     conversation.append({'role': 'assistant', 'content': resp_text})
     prompt_t = response['usage']['prompt_tokens']
@@ -76,7 +76,7 @@ def get_response_print(conversation):
     print(f"\n\nASSISTANT: {resp_text}")
     print(f"{total_t} = c:{completion_t} + p:{prompt_t}")
 
-def run_conversation_loop(conversation): 
+def run_conversation_loop(conversation, model): 
     while True:
         user_in = input("\n\nUSER: ")
 
@@ -90,7 +90,7 @@ def run_conversation_loop(conversation):
             user_in = user_in[1:]
 
         append_user_prompt(conversation, user_in)
-        get_response_print(conversation)
+        get_response_print(conversation, model)
         print_response_end()
         
 
@@ -103,9 +103,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("prompt_file", nargs='?', 
                         help="Path to the file contains initial promt")
+    parser.add_argument('-m', '--model', 
+                        help="ChatGPT model: [3 -> for GPT3.5] or [4: for GPT4]",
+                        default='3')
     args = parser.parse_args()
 
     prompt_file = args.prompt_file
+    if args.model == '4':
+        model = 'gpt-4'
+        print(f"Using GPT-4")
+    else:
+        model = 'gpt-3.5-turbo'
+        print(f"Using GPT-3.5")
 
     conversation = get_new_conversation()
 
@@ -114,10 +123,10 @@ def main():
         with open(prompt_file, 'r') as pf:
             prompt = get_conversation_from_prompt_file(pf)
             append_user_prompt(conversation, prompt)
-            get_response_print(conversation)
+            get_response_print(conversation, model)
 
     # main conversation loop
-    run_conversation_loop(conversation)
+    run_conversation_loop(conversation, model)
 
     
 if __name__ == "__main__":
