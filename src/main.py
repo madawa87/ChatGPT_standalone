@@ -1,5 +1,3 @@
-import os
-import sys
 import argparse
 from pathlib import Path
 import json
@@ -104,7 +102,7 @@ def main():
     parser.add_argument("prompt_file", nargs='?', 
                         help="Path to the file contains initial promt")
     parser.add_argument('-m', '--model', 
-                        help="ChatGPT model: [3 -> for GPT3.5] or [4: for GPT4]",
+                        help="ChatGPT model: [3: for GPT3.5] or [4: for GPT4]",
                         default='3')
     args = parser.parse_args()
 
