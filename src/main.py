@@ -71,7 +71,7 @@ def get_response_print(conversation, model):
     completion_t = response['usage']['completion_tokens']
     total_t = response['usage']['total_tokens']
 
-    print(f"\n\nASSISTANT: {resp_text}")
+    print(f"\n\nASSISTANT\n: {resp_text}")
     print(f"{total_t} = c:{completion_t} + p:{prompt_t}")
 
 def run_conversation_loop(conversation, model): 
